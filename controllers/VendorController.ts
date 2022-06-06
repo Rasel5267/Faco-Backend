@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { EditVendorInputs, VendorLoginInput } from "../dto";
+import { CreateFoodInputs, EditVendorInputs, VendorLoginInput } from "../dto";
+import { Food } from "../models";
 import { GenerateSignature, ValidatePassword } from "../utility";
 import { FindVendor } from "./AdminController";
 
@@ -77,4 +78,76 @@ export const UpdateVendorService = async (req:Request, res: Response, next: Next
 	}
 
 	return res.json({ "message": "Vendor info not found" });
+}
+
+export const UpdateVendorCoverImage = async (req:Request, res: Response, next: NextFunction) => {
+	const user = req.user;
+
+	if(user){
+
+		const vendor = await FindVendor(user._id);
+
+		if(vendor !== null){
+			const files = req.files as [Express.Multer.File]
+			const images = files.map((file: Express.Multer.File) => file.filename);
+
+			vendor.coverImage.push(...images);
+
+			const result = await vendor.save();
+
+			return res.json(result);
+		}
+	}
+
+	return res.json({ "message": "Something went wrong with add cover image" });
+}
+
+export const AddFood = async (req:Request, res: Response, next: NextFunction) => {
+	const user = req.user;
+
+	if(user){
+		const { name, description, category, foodTypes, readyTime, price } = <CreateFoodInputs>req.body;
+
+		const vendor = await FindVendor(user._id);
+
+		if(vendor !== null){
+			const files = req.files as [Express.Multer.File]
+			const images = files.map((file: Express.Multer.File) => file.filename);
+
+			const createFood = await Food.create({
+				vendorId: vendor._id,
+				name: name,
+				description: description,
+				category: category,
+				foodTypes: foodTypes,
+				images: images,
+				readyTime: readyTime,
+				price: price,
+				rating: 0
+			})
+
+			vendor.foods.push(createFood);
+			const result = await vendor.save();
+
+			return res.json(result);
+		}
+	}
+
+	return res.json({ "message": "Something went wrong with add food" });
+}
+
+export const GetFoods = async (req:Request, res: Response, next: NextFunction) => {
+	const user = req.user;
+
+	if(user){
+		const foods = await Food.find({ vendorId: user._id })
+
+		if(foods !== null){
+			return res.json(foods)
+		}
+
+		return res.json({ "message": "Food Not Available right now" })
+	}
+
+	return res.json({ "message": "Foods info not found" });
 }

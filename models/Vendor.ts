@@ -13,7 +13,7 @@ interface VendorDoc extends Document {
 	serviceAvailable: boolean,
 	coverImage: [string],
 	rating: number,
-	// foods: any
+	foods: any
 }
 
 const VendorSchema = new Schema({
@@ -29,10 +29,10 @@ const VendorSchema = new Schema({
 	serviceAvailable: { type: Boolean },
 	coverImage: { type: [String] },
 	rating: { type: Number },
-	// foods: [{
-	// 	type: mongoose.SchemaTypes.ObjectId,
-	// 	ref: 'food'
-	// }]
+	foods: [{
+		type: mongoose.SchemaTypes.ObjectId,
+		ref: 'food'
+	}]
 },{
 	toJSON: {
 		transform(doc, ret){
@@ -46,6 +46,6 @@ const VendorSchema = new Schema({
 	versionKey: false
 });
 
-const Vendor = mongoose.model<VendorDoc>('Vendor', VendorSchema);
+const Vendor = mongoose.model<VendorDoc>('vendor', VendorSchema);
 
 export { Vendor };
